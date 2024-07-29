@@ -7,15 +7,13 @@ function App() {
   const { isAuthenticated } = useSelector((state) => state.user);
 
   return (
-    <>
-      <div className="flex  h-screen">
-        {isAuthenticated ? <Sidebar /> : null}
-        <div className="w-full">
-          {isAuthenticated ? <Header /> : null}
-          <Outlet />
-        </div>
+    <div className="flex min-h-screen w-full">
+      {isAuthenticated ? <Sidebar /> : null}
+      <div className="w-full">
+        {isAuthenticated ? <Header /> : null}
+        <Outlet />
       </div>
-    </>
+    </div>
   );
 }
 
