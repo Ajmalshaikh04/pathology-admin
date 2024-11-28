@@ -4,17 +4,18 @@ import {
   createFranchise,
   updateFranchise,
   deleteFranchise,
+  setCommissionForSelectedFranchises,
 } from "./franchiseAPI";
 
 export const getAllFranchisesAsync = createAsyncThunk(
   "franchise/getAllFranchise",
-  async (_, thunkAPI) => {
+  async ({ page = 1, limit = 10 }, thunkAPI) => {
     try {
       const { token } = thunkAPI.getState().user;
       const headers = { authorization: token };
-      const response = await getAllFranchises(headers);
+      const response = await getAllFranchises(headers, page, limit);
       console.log("getAllFranchise", response);
-      return response.data;
+      return response;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
@@ -63,12 +64,37 @@ export const deleteFranchiseAsync = createAsyncThunk(
   }
 );
 
+export const setCommissionForSelectedFranchisesAsync = createAsyncThunk(
+  "franchises/setCommissionForSelected",
+  async ({ franchiseIds, commissionPercentage }, { rejectWithValue }) => {
+    try {
+      const response = await setCommissionForSelectedFranchises(
+        franchiseIds,
+        commissionPercentage
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const franchiseSlice = createSlice({
   name: "franchise",
   initialState: {
     franchise: [],
     loading: false,
     error: null,
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      limit: 10,
+    },
+  },
+  reducers: {
+    setPaginationLimit: (state, action) => {
+      state.pagination.limit = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -78,7 +104,8 @@ const franchiseSlice = createSlice({
       })
       .addCase(getAllFranchisesAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.franchise = action.payload;
+        state.franchise = action.payload.data;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getAllFranchisesAsync.rejected, (state, action) => {
         state.loading = false;
@@ -126,8 +153,25 @@ const franchiseSlice = createSlice({
       .addCase(deleteFranchiseAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(setCommissionForSelectedFranchisesAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(
+        setCommissionForSelectedFranchisesAsync.fulfilled,
+        (state, action) => {
+          state.loading = false;
+          // Handle the successful commission update here
+        }
+      )
+      .addCase(
+        setCommissionForSelectedFranchisesAsync.rejected,
+        (state, action) => {
+          state.loading = false;
+          state.error = action.payload;
+        }
+      );
   },
 });
-
+export const { setPaginationLimit } = franchiseSlice.actions;
 export default franchiseSlice.reducer;

@@ -1,223 +1,3 @@
-// import { useState, useEffect } from "react";
-// import { useSelector, useDispatch } from "react-redux";
-// import {
-//   getAllLabsAsync,
-//   createLabAsync,
-//   updateLabAsync,
-//   deleteLabAsync,
-//   createTestAsync,
-//   updateTestAsync,
-//   deleteTestAsync,
-// } from "../../store/features/labs/labsSlice";
-// import LabModal from "./LabModal";
-// import TestModal from "./TestModal";
-// import DeleteConfirmationModal from "./DeleteConfirmationModal";
-// import Pagination from "./Pagination";
-
-// const LabTable = () => {
-//   const [filter, setFilter] = useState("");
-//   const [showLabModal, setShowLabModal] = useState(false);
-//   const [showTestModal, setShowTestModal] = useState(false);
-//   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-//   const [selectedLab, setSelectedLab] = useState(null);
-//   const [testToDelete, setTestToDelete] = useState(null);
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [itemsPerPage] = useState(10);
-
-//   const dispatch = useDispatch();
-//   const { labs, loading, error } = useSelector((state) => state.labs);
-
-//   useEffect(() => {
-//     dispatch(getAllLabsAsync());
-//   }, [dispatch]);
-
-//   const filteredLabs = labs.filter(
-//     (lab) => lab.name && lab.name.toLowerCase().includes(filter.toLowerCase())
-//   );
-
-//   const indexOfLastItem = currentPage * itemsPerPage;
-//   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-//   const currentLabs = filteredLabs.slice(indexOfFirstItem, indexOfLastItem);
-
-//   const handleCreateLab = async (labData) => {
-//     await dispatch(createLabAsync(labData));
-//     setShowLabModal(false);
-//   };
-
-//   const handleUpdateLab = async (labId, labData) => {
-//     await dispatch(updateLabAsync({ id: labId, labData }));
-//     setShowLabModal(false);
-//   };
-
-//   const handleDeleteLab = async (labId) => {
-//     await dispatch(deleteLabAsync(labId));
-//     setShowDeleteDialog(false);
-//   };
-
-//   const handleCreateTest = async (testData) => {
-//     await dispatch(
-//       createTestAsync({ ...testData, diagnosticLabId: selectedLab._id })
-//     );
-//     setShowTestModal(false);
-//   };
-
-//   const handleUpdateTest = async (testId, testData) => {
-//     await dispatch(updateTestAsync({ id: testId, ...testData }));
-//     setShowTestModal(false);
-//   };
-
-//   const handleDeleteTest = async (testId) => {
-//     await dispatch(deleteTestAsync(testId));
-//     setShowDeleteDialog(false);
-//   };
-
-//   if (loading) return <div>Loading...</div>;
-//   if (error) return <div>Error: {error}</div>;
-
-//   return (
-//     <div className="bg-white p-10 rounded-lg shadow-md mt-10 w-full">
-//       <div className="flex justify-between items-center mb-4">
-//         <input
-//           type="text"
-//           placeholder="Filter labs..."
-//           className="border rounded-md px-3 py-2 w-64"
-//           value={filter}
-//           onChange={(e) => setFilter(e.target.value)}
-//         />
-//         <button
-//           className="px-3 py-2 border rounded-md"
-//           onClick={() => setShowLabModal(true)}
-//         >
-//           Create lab
-//         </button>
-//       </div>
-
-//       <table className="w-full">
-//         <thead>
-//           <tr className="border-b">
-//             <th className="py-2 px-4"></th>
-//             <th className="py-2 px-4">Name</th>
-//             <th className="py-2 px-4">Address</th>
-//             <th className="py-2 px-4">Contact</th>
-//             <th className="py-2 px-4">Tests Offered</th>
-//             <th className="py-2 px-4">Actions</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {currentLabs.map((lab) => (
-//             <tr
-//               key={lab._id}
-//               className="border-b hover:bg-gray-100 cursor-pointer"
-//             >
-//               <td
-//                 className="py-2 px-4 cursor-pointer"
-//                 onClick={() => setSelectedLab(lab)}
-//               >
-//                 <img
-//                   className="w-full h-28 object-cover cursor-pointer"
-//                   src={lab.image}
-//                   alt={lab.name}
-//                 />
-//               </td>
-//               <td
-//                 className="py-2 px-4 cursor-pointer"
-//                 onClick={() => setSelectedLab(lab)}
-//               >
-//                 {lab.name}
-//               </td>
-//               <td
-//                 className="py-2 px-4 cursor-pointer"
-//                 onClick={() => setSelectedLab(lab)}
-//               >
-//                 {lab.address?.address}
-//               </td>
-//               <td
-//                 className="py-2 px-4 cursor-pointer"
-//                 onClick={() => setSelectedLab(lab)}
-//               >
-//                 {lab.contactNumber}
-//               </td>
-//               <td
-//                 className="py-2 px-4 cursor-pointer"
-//                 onClick={() => setSelectedLab(lab)}
-//               >
-//                 {lab.testsOffered?.length} test
-//                 {lab.testsOffered?.length > 1 ? "s" : ""}
-//               </td>
-//               <td className="py-2 px-4">
-//                 <button
-//                   onClick={(e) => {
-//                     e.stopPropagation();
-//                     setSelectedLab(lab);
-//                     setShowLabModal(true);
-//                   }}
-//                   className="bg-blue-500 text-white mr-2 px-2 py-1 rounded-lg"
-//                 >
-//                   Edit
-//                 </button>
-//                 <button
-//                   onClick={(e) => {
-//                     e.stopPropagation();
-//                     setSelectedLab(lab);
-//                     setShowDeleteDialog(true);
-//                   }}
-//                   className="bg-red-500 text-white mr-2 px-2 py-1 rounded-lg"
-//                 >
-//                   Delete
-//                 </button>
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-
-//       <Pagination
-//         itemsPerPage={itemsPerPage}
-//         totalItems={filteredLabs.length}
-//         paginate={setCurrentPage}
-//         currentPage={currentPage}
-//       />
-
-//       {showLabModal && (
-//         <LabModal
-//           closeModal={() => setShowLabModal(false)}
-//           lab={selectedLab}
-//           onSubmit={selectedLab ? handleUpdateLab : handleCreateLab}
-//         />
-//       )}
-
-//       {showTestModal && (
-//         <TestModal
-//           closeModal={() => setShowTestModal(false)}
-//           test={
-//             selectedLab
-//               ? selectedLab.testsOffered.find(
-//                   (t) => t._id === testToDelete?._id
-//                 )
-//               : null
-//           }
-//           onSubmit={testToDelete ? handleUpdateTest : handleCreateTest}
-//         />
-//       )}
-
-//       {showDeleteDialog && (
-//         <DeleteConfirmationModal
-//           onConfirm={() =>
-//             testToDelete
-//               ? handleDeleteTest(testToDelete._id)
-//               : handleDeleteLab(selectedLab._id)
-//           }
-//           onCancel={() => setShowDeleteDialog(false)}
-//           itemToDelete={testToDelete || selectedLab}
-//           itemType={testToDelete ? "test" : "lab"}
-//         />
-//       )}
-//     </div>
-//   );
-// };
-
-// export default LabTable;
-//===========================================
 // import React, { useState, useEffect } from "react";
 // import { useSelector, useDispatch } from "react-redux";
 // import {
@@ -230,18 +10,20 @@
 //   deleteTestAsync,
 // } from "../../store/features/labs/labsSlice";
 // import LabModal from "./LabModal";
-// import TestsTable from "./LabTests/TestsTable";
 // import DeleteConfirmationModal from "./DeleteConfirmationModal";
 // import Pagination from "./Pagination";
+// import LabTestsTable from "./LabTestsTable";
 
 // const LabTable = () => {
 //   const [filter, setFilter] = useState("");
 //   const [showLabModal, setShowLabModal] = useState(false);
+
 //   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 //   const [selectedLab, setSelectedLab] = useState(null);
-//   const [expandedLab, setExpandedLab] = useState(null);
+
 //   const [currentPage, setCurrentPage] = useState(1);
 //   const [itemsPerPage] = useState(10);
+//   const [viewingLabTests, setViewingLabTests] = useState(false);
 
 //   const dispatch = useDispatch();
 //   const { labs, loading, error } = useSelector((state) => state.labs);
@@ -250,184 +32,434 @@
 //     dispatch(getAllLabsAsync());
 //   }, [dispatch]);
 
-//   const filteredLabs = labs.filter(
-//     (lab) => lab.name && lab.name.toLowerCase().includes(filter.toLowerCase())
+//   const filteredLabs = labs?.filter(
+//     (lab) => lab?.name && lab?.name.toLowerCase().includes(filter.toLowerCase())
 //   );
 
 //   const indexOfLastItem = currentPage * itemsPerPage;
 //   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 //   const currentLabs = filteredLabs.slice(indexOfFirstItem, indexOfLastItem);
 
-//   const handleCreateLab = async (labData) => {
-//     await dispatch(createLabAsync(labData));
-//     setShowLabModal(false);
+//   const handleCreateLab = () => {
+//     setSelectedLab(null); // Clear selected lab
+//     setShowLabModal(true);
+//     dispatch(getAllLabsAsync());
 //   };
 
 //   const handleUpdateLab = async (labId, labData) => {
-//     await dispatch(updateLabAsync({ id: labId, labData }));
-//     setShowLabModal(false);
+//     try {
+//       await dispatch(updateLabAsync({ id: labId, labData }));
+//       setShowLabModal(false);
+//       dispatch(getAllLabsAsync());
+//     } catch (error) {
+//       console.error("Error updating lab:", error);
+//     }
+//   };
+
+//   const handleCreateLabSubmit = async (labData) => {
+//     try {
+//       await dispatch(createLabAsync(labData));
+//       setShowLabModal(false);
+//       dispatch(getAllLabsAsync());
+//     } catch (error) {
+//       console.error("Error creating lab:", error);
+//     }
 //   };
 
 //   const handleDeleteLab = async (labId) => {
-//     await dispatch(deleteLabAsync(labId));
-//     setShowDeleteDialog(false);
+//     try {
+//       await dispatch(deleteLabAsync(labId));
+//       setShowDeleteDialog(false);
+//       dispatch(getAllLabsAsync());
+//     } catch (error) {
+//       console.error("Error deleting lab:", error);
+//     }
 //   };
 
-//   const handleCreateTest = async (labId, testData) => {
-//     await dispatch(createTestAsync({ labId, ...testData }));
-//     setSelectedLab({
-//       ...selectedLab,
-//       testsOffered: [...selectedLab.testsOffered, testData],
-//     });
+//   const handleCreateTest = async (testData) => {
+//     try {
+//       await dispatch(
+//         createTestAsync({ ...testData, diagnosticLabId: selectedLab._id })
+//       );
+//       dispatch(getAllLabsAsync());
+//     } catch (error) {
+//       console.error("Error creating test:", error);
+//     }
 //   };
 
-//   const handleUpdateTest = async (testId, testData) => {
-//     await dispatch(updateTestAsync({ id: testId, ...testData }));
-//     const updatedTests = selectedLab.testsOffered.map((test) =>
-//       test._id === testId ? { ...test, ...testData } : test
-//     );
-//     setSelectedLab({ ...selectedLab, testsOffered: updatedTests });
+//   const handleUpdateTest = async (testData) => {
+//     try {
+//       await dispatch(
+//         updateTestAsync({
+//           diagnosticLabId: selectedLab._id,
+//           testId: testData._id,
+//           testData,
+//         })
+//       );
+//       dispatch(getAllLabsAsync());
+//     } catch (error) {
+//       console.error("Error updating test:", error);
+//     }
 //   };
 
-//   const handleDeleteTest = async (testId) => {
-//     await dispatch(deleteTestAsync(testId));
-//     const updatedTests = selectedLab.testsOffered.filter(
-//       (test) => test._id !== testId
-//     );
-//     setSelectedLab({ ...selectedLab, testsOffered: updatedTests });
+//   const handleDeleteTest = async (test) => {
+//     try {
+//       await dispatch(deleteTestAsync(test._id));
+//       dispatch(getAllLabsAsync());
+//     } catch (error) {
+//       console.error("Error deleting test:", error);
+//     }
 //   };
 
-//   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+//   const handleViewTests = (lab) => {
+//     setSelectedLab(lab);
+//     setViewingLabTests(true);
+//   };
 
 //   return (
 //     <div>
-//       <input
-//         type="text"
-//         placeholder="Filter labs..."
-//         value={filter}
-//         onChange={(e) => setFilter(e.target.value)}
-//         className="border rounded-md px-3 py-2 mb-4"
-//       />
-
-//       {loading && <p>Loading...</p>}
-//       {error && <p>{error}</p>}
-
-//       <table className="min-w-full divide-y divide-gray-200">
-//         <thead>
-//           <tr>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               Name
-//             </th>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               Address
-//             </th>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               City
-//             </th>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               State
-//             </th>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               Pin Code
-//             </th>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               Contact Number
-//             </th>
-//             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//               Actions
-//             </th>
-//           </tr>
-//         </thead>
-//         <tbody className="bg-white divide-y divide-gray-200">
-//           {currentLabs.map((lab) => (
-//             <React.Fragment key={lab._id}>
-//               <tr>
-//                 <td className="px-6 py-4 whitespace-nowrap">{lab.name}</td>
-//                 <td className="px-6 py-4 whitespace-nowrap">
-//                   {lab.address?.address}
-//                 </td>
-//                 <td className="px-6 py-4 whitespace-nowrap">
-//                   {lab.address?.city}
-//                 </td>
-//                 <td className="px-6 py-4 whitespace-nowrap">
-//                   {lab.address?.state}
-//                 </td>
-//                 <td className="px-6 py-4 whitespace-nowrap">
-//                   {lab.address?.pinCode}
-//                 </td>
-//                 <td className="px-6 py-4 whitespace-nowrap">
-//                   {lab.contactNumber}
-//                 </td>
-//                 <td className="px-6 py-4 whitespace-nowrap">
-//                   <button
-//                     className="bg-blue-500 text-white px-2 py-1 rounded-lg mr-2"
-//                     onClick={() => {
-//                       setSelectedLab(lab);
-//                       setShowLabModal(true);
-//                     }}
-//                   >
-//                     Edit
-//                   </button>
-//                   <button
-//                     className="bg-red-500 text-white px-2 py-1 rounded-lg"
-//                     onClick={() => {
-//                       setSelectedLab(lab);
-//                       setShowDeleteDialog(true);
-//                     }}
-//                   >
-//                     Delete
-//                   </button>
-//                   <button
-//                     className="bg-green-500 text-white px-2 py-1 rounded-lg"
-//                     onClick={() => {
-//                       setExpandedLab(expandedLab === lab._id ? null : lab._id);
-//                       setSelectedLab(lab);
-//                     }}
-//                   >
-//                     {expandedLab === lab._id ? "Hide Tests" : "View Tests"}
-//                   </button>
-//                 </td>
+//       {loading ? (
+//         <div>Loading...</div>
+//       ) : error ? (
+//         <div>Error: {error.message}</div>
+//       ) : viewingLabTests ? (
+//         <LabTestsTable
+//           lab={selectedLab}
+//           onBack={() => setViewingLabTests(false)}
+//           onAddTest={handleCreateTest}
+//           onEditTest={handleUpdateTest}
+//           onDeleteTest={handleDeleteTest}
+//         />
+//       ) : (
+//         <div className="mx-10 py-10">
+//           <div className="flex justify-between items-center mb-4">
+//             <input
+//               type="text"
+//               placeholder="Filter by lab name"
+//               value={filter}
+//               onChange={(e) => setFilter(e.target.value)}
+//               className="border rounded-md px-3 py-2"
+//             />
+//             <button
+//               onClick={handleCreateLab}
+//               className="px-3 py-2 border rounded-md"
+//             >
+//               Add Lab
+//             </button>
+//           </div>
+//           <table className="w-full">
+//             <thead className="bg-blue-50">
+//               <tr className="border-b">
+//                 <th className="py-2 px-4"></th>
+//                 <th className="py-2 px-4">Name</th>
+//                 <th className="py-2 px-4">Address</th>
+//                 <th className="py-2 px-4">Contact</th>
+//                 <th className="py-2 px-4">Actions</th>
 //               </tr>
-//               {expandedLab === lab._id && (
-//                 <tr>
-//                   <td colSpan="7">
-//                     <TestsTable
-//                       lab={lab}
-//                       onEditTest={handleUpdateTest}
-//                       onDeleteTest={handleDeleteTest}
-//                       onAddTest={(testData) =>
-//                         handleCreateTest(lab._id, testData)
-//                       }
+//             </thead>
+//             <tbody>
+//               {currentLabs.map((lab) => (
+//                 <tr key={lab._id} className="border-b">
+//                   <td className="py-2 px-4">
+//                     <img
+//                       className="w-56 h-28 "
+//                       src={lab.image}
+//                       alt={lab.name}
 //                     />
 //                   </td>
-//                 </tr>
-//               )}
-//             </React.Fragment>
-//           ))}
-//         </tbody>
-//       </table>
+//                   <td className="py-2 px-4">{lab.name}</td>
+//                   <td className="py-2 px-4">
+//                     {lab?.address?.address}, {lab?.address?.city},{" "}
+//                     {lab?.address?.state}, {lab?.address?.pinCode}
+//                   </td>
+//                   <td className="py-2 px-4">{lab.contact}</td>
+//                   <td className="py-2 px-4 space-x-4">
+//                     <button
+//                       className="text-blue-600 mr-2"
+//                       onClick={() => handleViewTests(lab)}
+//                     >
+//                       View Tests
+//                     </button>
+//                     <button
+//                       className="text-blue-600 mr-2"
+//                       onClick={() => {
+//                         setSelectedLab(lab);
+//                         setShowLabModal(true);
+//                       }}
+//                     >
+//                       Edit
+//                     </button>
 
-//       <Pagination
-//         itemsPerPage={itemsPerPage}
-//         totalItems={filteredLabs.length}
-//         paginate={paginate}
-//         currentPage={currentPage}
-//       />
+//                     <button
+//                       className="text-red-600"
+//                       onClick={() => {
+//                         setSelectedLab(lab);
+//                         setShowDeleteDialog(true);
+//                       }}
+//                     >
+//                       Delete
+//                     </button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+
+//           <Pagination
+//             currentPage={currentPage}
+//             itemsPerPage={itemsPerPage}
+//             totalItems={filteredLabs.length}
+//             onPageChange={(page) => setCurrentPage(page)}
+//           />
+//         </div>
+//       )}
 
 //       {showLabModal && (
 //         <LabModal
-//           closeModal={() => setShowLabModal(false)}
 //           lab={selectedLab}
-//           onSubmit={selectedLab ? handleUpdateLab : handleCreateLab}
+//           onSubmit={selectedLab ? handleUpdateLab : handleCreateLabSubmit}
+//           closeModal={() => setShowLabModal(false)}
 //         />
 //       )}
-
 //       {showDeleteDialog && (
 //         <DeleteConfirmationModal
 //           onConfirm={() => handleDeleteLab(selectedLab._id)}
 //           onCancel={() => setShowDeleteDialog(false)}
-//           itemToDelete={selectedLab}
-//           itemType="lab"
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default LabTable;
+// ====================================================
+// import React, { useState, useEffect } from "react";
+// import { useSelector, useDispatch } from "react-redux";
+// import {
+//   getAllLabsAsync,
+//   createLabAsync,
+//   updateLabAsync,
+//   deleteLabAsync,
+//   createTestAsync,
+//   updateTestAsync,
+//   deleteTestAsync,
+// } from "../../store/features/labs/labsSlice";
+// import LabModal from "./LabModal";
+// import DeleteConfirmationModal from "./DeleteConfirmationModal";
+// import Pagination from "./Pagination";
+// import LabTestsTable from "./LabTestsTable";
+
+// const LabTable = () => {
+//   const [filter, setFilter] = useState("");
+//   const [showLabModal, setShowLabModal] = useState(false);
+//   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+//   const [selectedLab, setSelectedLab] = useState(null);
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [itemsPerPage, setItemsPerPage] = useState(10);
+//   const [viewingLabTests, setViewingLabTests] = useState(false);
+
+//   const dispatch = useDispatch();
+//   const { labs, loading, error, pagination } = useSelector(
+//     (state) => state.labs
+//   );
+
+//   useEffect(() => {
+//     dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//   }, [dispatch, currentPage, itemsPerPage]);
+
+//   const filteredLabs = labs?.filter(
+//     (lab) => lab?.name && lab?.name.toLowerCase().includes(filter.toLowerCase())
+//   );
+
+//   const handleCreateLab = () => {
+//     setSelectedLab(null);
+//     setShowLabModal(true);
+//   };
+
+//   const handleUpdateLab = async (labId, labData) => {
+//     try {
+//       await dispatch(updateLabAsync({ id: labId, labData }));
+//       setShowLabModal(false);
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error updating lab:", error);
+//     }
+//   };
+
+//   const handleCreateLabSubmit = async (labData) => {
+//     try {
+//       await dispatch(createLabAsync(labData));
+//       setShowLabModal(false);
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error creating lab:", error);
+//     }
+//   };
+
+//   const handleDeleteLab = async (labId) => {
+//     try {
+//       await dispatch(deleteLabAsync(labId));
+//       setShowDeleteDialog(false);
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error deleting lab:", error);
+//     }
+//   };
+
+//   const handleCreateTest = async (testData) => {
+//     try {
+//       await dispatch(
+//         createTestAsync({ ...testData, diagnosticLabId: selectedLab._id })
+//       );
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error creating test:", error);
+//     }
+//   };
+
+//   const handleUpdateTest = async (testData) => {
+//     try {
+//       await dispatch(
+//         updateTestAsync({
+//           diagnosticLabId: selectedLab._id,
+//           testId: testData._id,
+//           testData,
+//         })
+//       );
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error updating test:", error);
+//     }
+//   };
+
+//   const handleDeleteTest = async (test) => {
+//     try {
+//       await dispatch(deleteTestAsync(test._id));
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error deleting test:", error);
+//     }
+//   };
+
+//   const handleViewTests = (lab) => {
+//     setSelectedLab(lab);
+//     setViewingLabTests(true);
+//   };
+
+//   return (
+//     <div>
+//       {loading ? (
+//         <div>Loading...</div>
+//       ) : error ? (
+//         <div>Error: {error.message}</div>
+//       ) : viewingLabTests ? (
+//         <LabTestsTable
+//           lab={selectedLab}
+//           onBack={() => setViewingLabTests(false)}
+//           onAddTest={handleCreateTest}
+//           onEditTest={handleUpdateTest}
+//           onDeleteTest={handleDeleteTest}
+//         />
+//       ) : (
+//         <div className="mx-10 py-10">
+//           <div className="flex justify-between items-center mb-4">
+//             <input
+//               type="text"
+//               placeholder="Filter by lab name"
+//               value={filter}
+//               onChange={(e) => setFilter(e.target.value)}
+//               className="border rounded-md px-3 py-2"
+//             />
+//             <button
+//               onClick={handleCreateLab}
+//               className="px-3 py-2 border rounded-md"
+//             >
+//               Add Lab
+//             </button>
+//           </div>
+//           <table className="w-full">
+//             <thead className="bg-blue-50">
+//               <tr className="border-b">
+//                 <th className="py-2 px-4"></th>
+//                 <th className="py-2 px-4">Name</th>
+//                 <th className="py-2 px-4">Address</th>
+//                 <th className="py-2 px-4">Contact</th>
+//                 <th className="py-2 px-4">Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filteredLabs
+//                 .slice(
+//                   (currentPage - 1) * itemsPerPage,
+//                   currentPage * itemsPerPage
+//                 )
+//                 .map((lab) => (
+//                   <tr key={lab._id} className="border-b">
+//                     <td className="py-2 px-4">
+//                       <img
+//                         className="w-56 h-28"
+//                         src={lab.image}
+//                         alt={lab.name}
+//                       />
+//                     </td>
+//                     <td className="py-2 px-4">{lab.name}</td>
+//                     <td className="py-2 px-4">
+//                       {lab?.address?.address}, {lab?.address?.city},{" "}
+//                       {lab?.address?.state}, {lab?.address?.pinCode}
+//                     </td>
+//                     <td className="py-2 px-4">{lab.contact}</td>
+//                     <td className="py-2 px-4 space-x-4">
+//                       <button
+//                         className="text-blue-600 mr-2"
+//                         onClick={() => handleViewTests(lab)}
+//                       >
+//                         View Tests
+//                       </button>
+//                       <button
+//                         className="text-blue-600 mr-2"
+//                         onClick={() => {
+//                           setSelectedLab(lab);
+//                           setShowLabModal(true);
+//                         }}
+//                       >
+//                         Edit
+//                       </button>
+
+//                       <button
+//                         className="text-red-600"
+//                         onClick={() => {
+//                           setSelectedLab(lab);
+//                           setShowDeleteDialog(true);
+//                         }}
+//                       >
+//                         Delete
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))}
+//             </tbody>
+//           </table>
+
+//           <Pagination
+//             currentPage={pagination.currentPage}
+//             itemsPerPage={pagination.limit}
+//             totalItems={pagination.totalLabs}
+//             onPageChange={(page) => setCurrentPage(page)}
+//           />
+//         </div>
+//       )}
+
+//       {showLabModal && (
+//         <LabModal
+//           lab={selectedLab}
+//           onSubmit={selectedLab ? handleUpdateLab : handleCreateLabSubmit}
+//           closeModal={() => setShowLabModal(false)}
+//         />
+//       )}
+//       {showDeleteDialog && (
+//         <DeleteConfirmationModal
+//           onConfirm={() => handleDeleteLab(selectedLab._id)}
+//           onCancel={() => setShowDeleteDialog(false)}
 //         />
 //       )}
 //     </div>
@@ -436,7 +468,272 @@
 
 // export default LabTable;
 //====================================================
-import { useState, useEffect } from "react";
+// import React, { useState, useEffect } from "react";
+// import { useSelector, useDispatch } from "react-redux";
+// import {
+//   getAllLabsAsync,
+//   createLabAsync,
+//   updateLabAsync,
+//   deleteLabAsync,
+//   createTestAsync,
+//   updateTestAsync,
+//   deleteTestAsync,
+// } from "../../store/features/labs/labsSlice";
+// import LabModal from "./LabModal";
+// import DeleteConfirmationModal from "./DeleteConfirmationModal";
+// import Pagination from "./Pagination";
+// import LabTestsTable from "./LabTestsTable";
+
+// const LabTable = () => {
+//   const [filter, setFilter] = useState("");
+//   const [showLabModal, setShowLabModal] = useState(false);
+//   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+//   const [selectedLab, setSelectedLab] = useState(null);
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [itemsPerPage, setItemsPerPage] = useState(10);
+//   const [viewingLabTests, setViewingLabTests] = useState(false);
+//   const dispatch = useDispatch();
+//   const { labs, loading, error, pagination } = useSelector(
+//     (state) => state.labs
+//   );
+
+//   useEffect(() => {
+//     console.log("Fetching data with:", { currentPage, itemsPerPage });
+//     dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//   }, [dispatch, currentPage, itemsPerPage]);
+
+//   useEffect(() => {
+//     console.log("Updated labs:", labs);
+//     console.log("Updated pagination:", pagination);
+//   }, [labs, pagination]);
+
+//   const handleItemsPerPageChange = (e) => {
+//     const newItemsPerPage = parseInt(e.target.value);
+//     setItemsPerPage(newItemsPerPage);
+//     setCurrentPage(1); // Reset to first page when changing items per page
+//   };
+
+//   const handlePageChange = (newPage) => {
+//     setCurrentPage(newPage);
+//   };
+//   const filteredLabs =
+//     labs?.filter(
+//       (lab) =>
+//         lab?.name && lab?.name.toLowerCase().includes(filter.toLowerCase())
+//     ) || [];
+
+//   const handleCreateLab = () => {
+//     setSelectedLab(null);
+//     setShowLabModal(true);
+//   };
+
+//   const handleUpdateLab = async (labId, labData) => {
+//     try {
+//       await dispatch(updateLabAsync({ id: labId, labData }));
+//       setShowLabModal(false);
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error updating lab:", error);
+//     }
+//   };
+
+//   const handleCreateLabSubmit = async (labData) => {
+//     try {
+//       await dispatch(createLabAsync(labData));
+//       setShowLabModal(false);
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error creating lab:", error);
+//     }
+//   };
+
+//   const handleDeleteLab = async (labId) => {
+//     try {
+//       await dispatch(deleteLabAsync(labId));
+//       setShowDeleteDialog(false);
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error deleting lab:", error);
+//     }
+//   };
+
+//   const handleCreateTest = async (testData) => {
+//     try {
+//       await dispatch(
+//         createTestAsync({ ...testData, diagnosticLabId: selectedLab._id })
+//       );
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error creating test:", error);
+//     }
+//   };
+
+//   const handleUpdateTest = async (testData) => {
+//     try {
+//       await dispatch(
+//         updateTestAsync({
+//           diagnosticLabId: selectedLab._id,
+//           testId: testData._id,
+//           testData,
+//         })
+//       );
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error updating test:", error);
+//     }
+//   };
+
+//   const handleDeleteTest = async (test) => {
+//     try {
+//       await dispatch(deleteTestAsync(test._id));
+//       dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+//     } catch (error) {
+//       console.error("Error deleting test:", error);
+//     }
+//   };
+
+//   const handleViewTests = (lab) => {
+//     console.log("Selected lab:", lab); // Debug log
+//     setSelectedLab(lab);
+//     setViewingLabTests(true);
+//   };
+
+//   return (
+//     <div>
+//       {loading ? (
+//         <div>Loading...</div>
+//       ) : error ? (
+//         <div>Error: {error.message}</div>
+//       ) : viewingLabTests ? (
+//         <div>
+//           <LabTestsTable
+//             lab={selectedLab}
+//             onBack={() => {
+//               console.log("Back button clicked"); // Debug log
+//               setViewingLabTests(false);
+//             }}
+//             onAddTest={handleCreateTest}
+//             onEditTest={handleUpdateTest}
+//             onDeleteTest={handleDeleteTest}
+//           />
+//         </div>
+//       ) : (
+//         <div className="mx-10 py-10">
+//           <div className="flex justify-between items-center mb-4">
+//             <input
+//               type="text"
+//               placeholder="Filter by lab name"
+//               value={filter}
+//               onChange={(e) => setFilter(e.target.value)}
+//               className="border rounded-md px-3 py-2"
+//             />
+//             <div className="flex items-center">
+//               <label htmlFor="itemsPerPage" className="mr-2">
+//                 Items per page:
+//               </label>
+//               <select
+//                 id="itemsPerPage"
+//                 value={itemsPerPage}
+//                 onChange={handleItemsPerPageChange}
+//                 className="border rounded-md px-3 py-2"
+//               >
+//                 <option value="5">5</option>
+//                 <option value="10">10</option>
+//                 <option value="20">20</option>
+//                 <option value="30">30</option>
+//               </select>
+//             </div>
+//             <button
+//               onClick={handleCreateLab}
+//               className="px-3 py-2 border rounded-md"
+//             >
+//               Add Lab
+//             </button>
+//           </div>
+//           <table className="w-full">
+//             <thead className="bg-blue-50">
+//               <tr className="border-b">
+//                 <th className="py-2 px-4"></th>
+//                 <th className="py-2 px-4">Name</th>
+//                 <th className="py-2 px-4">Address</th>
+//                 <th className="py-2 px-4">Contact</th>
+//                 <th className="py-2 px-4">Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filteredLabs.map((lab) => (
+//                 <tr key={lab._id} className="border-b">
+//                   <td className="py-2 px-4">
+//                     <img className="w-56 h-28" src={lab.image} alt={lab.name} />
+//                   </td>
+//                   <td className="py-2 px-4">{lab.name}</td>
+//                   <td className="py-2 px-4">
+//                     {lab?.address?.address}, {lab?.address?.city},{" "}
+//                     {lab?.address?.state}, {lab?.address?.pinCode}
+//                   </td>
+//                   <td className="py-2 px-4">{lab.contact}</td>
+//                   <td className="py-2 px-4 space-x-4">
+//                     <button
+//                       className="text-blue-600 mr-2"
+//                       onClick={() => handleViewTests(lab)}
+//                     >
+//                       View Tests
+//                     </button>
+//                     <button
+//                       className="text-blue-600 mr-2"
+//                       onClick={() => {
+//                         setSelectedLab(lab);
+//                         setShowLabModal(true);
+//                       }}
+//                     >
+//                       Edit
+//                     </button>
+
+//                     <button
+//                       className="text-red-600"
+//                       onClick={() => {
+//                         setSelectedLab(lab);
+//                         setShowDeleteDialog(true);
+//                       }}
+//                     >
+//                       Delete
+//                     </button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+
+//           <Pagination
+//             currentPage={pagination.currentPage}
+//             itemsPerPage={pagination.limit}
+//             totalItems={pagination.totalLabs}
+//             onPageChange={handlePageChange}
+//           />
+//         </div>
+//       )}
+
+//       {showLabModal && (
+//         <LabModal
+//           lab={selectedLab}
+//           onSubmit={selectedLab ? handleUpdateLab : handleCreateLabSubmit}
+//           closeModal={() => setShowLabModal(false)}
+//         />
+//       )}
+//       {showDeleteDialog && (
+//         <DeleteConfirmationModal
+//           onConfirm={() => handleDeleteLab(selectedLab._id)}
+//           onCancel={() => setShowDeleteDialog(false)}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default LabTable;
+
+//====================================================
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   getAllLabsAsync,
@@ -446,9 +743,9 @@ import {
   createTestAsync,
   updateTestAsync,
   deleteTestAsync,
+  toggleHandleViewAsync,
 } from "../../store/features/labs/labsSlice";
 import LabModal from "./LabModal";
-import TestModal from "./TestModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import Pagination from "./Pagination";
 import LabTestsTable from "./LabTestsTable";
@@ -456,105 +753,151 @@ import LabTestsTable from "./LabTestsTable";
 const LabTable = () => {
   const [filter, setFilter] = useState("");
   const [showLabModal, setShowLabModal] = useState(false);
-  const [showTestModal, setShowTestModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedLab, setSelectedLab] = useState(null);
-  const [testToDelete, setTestToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [viewingLabTests, setViewingLabTests] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch();
-  const { labs, loading, error } = useSelector((state) => state.labs);
-
-  useEffect(() => {
-    dispatch(getAllLabsAsync());
-  }, [dispatch]);
-
-  const filteredLabs = labs.filter(
-    (lab) => lab.name && lab.name.toLowerCase().includes(filter.toLowerCase())
+  const { labs, loading, error, pagination } = useSelector(
+    (state) => state.labs
   );
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentLabs = filteredLabs.slice(indexOfFirstItem, indexOfLastItem);
+  useEffect(() => {
+    dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+  }, [dispatch, currentPage, itemsPerPage]);
 
-  const handleCreateLab = async (labData) => {
-    await dispatch(createLabAsync(labData));
-    setShowLabModal(false);
+  const filteredLabs =
+    labs?.filter((lab) =>
+      lab?.name?.toLowerCase().includes(filter.toLowerCase())
+    ) || [];
+
+  const handleItemsPerPageChange = (e) => {
+    const newItemsPerPage = parseInt(e.target.value);
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
   };
 
-  const handleUpdateLab = async (labId, labData) => {
-    await dispatch(updateLabAsync({ id: labId, labData }));
-    setShowLabModal(false);
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleCreateLab = () => {
+    setSelectedLab(null);
+    setShowLabModal(true);
+  };
+
+  const handleLabAction = async (action, labId, labData) => {
+    try {
+      await dispatch(action(labId ? { id: labId, labData } : labData));
+      setShowLabModal(false);
+      dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      console.error(`Error ${labId ? "updating" : "creating"} lab:`, error);
+    }
   };
 
   const handleDeleteLab = async (labId) => {
-    await dispatch(deleteLabAsync(labId));
-    setShowDeleteDialog(false);
+    try {
+      await dispatch(deleteLabAsync(labId));
+      setShowDeleteDialog(false);
+      dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      console.error("Error deleting lab:", error);
+    }
   };
 
-  const handleCreateTest = async (testData) => {
-    await dispatch(
-      createTestAsync({ ...testData, diagnosticLabId: selectedLab._id })
-    );
-    setShowTestModal(false);
-  };
-
-  const handleUpdateTest = async (testId, testData) => {
-    await dispatch(updateTestAsync({ id: testId, ...testData }));
-    setShowTestModal(false);
+  const handleTestAction = async (action, testData) => {
+    try {
+      await dispatch(
+        action({
+          ...testData,
+          diagnosticLabId: selectedLab._id,
+        })
+      );
+      dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      console.error(
+        `Error ${action === createTestAsync ? "creating" : "updating"} test:`,
+        error
+      );
+    }
   };
 
   const handleDeleteTest = async (testId) => {
-    await dispatch(deleteTestAsync(testId));
-    setShowDeleteDialog(false);
+    try {
+      await dispatch(deleteTestAsync(testId));
+      dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      console.error("Error deleting test:", error);
+    }
   };
 
-  const handleLabClick = (lab) => {
+  const handleViewTests = (lab) => {
+    setIsLoading(true);
     setSelectedLab(lab);
+    setIsLoading(false);
     setViewingLabTests(true);
   };
 
-  const handleBackToLabs = () => {
-    setSelectedLab(null);
-    setViewingLabTests(false);
+  const handleToggleHandleView = async (labId) => {
+    try {
+      await dispatch(toggleHandleViewAsync(labId));
+      dispatch(getAllLabsAsync({ page: currentPage, limit: itemsPerPage }));
+    } catch (error) {
+      console.error("Error toggling handleView:", error);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div className="bg-white p-10 rounded-lg shadow-md mt-10 w-full">
-      {viewingLabTests ? (
+    <div className="mx-10 py-10">
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : viewingLabTests ? (
         <LabTestsTable
           lab={selectedLab}
-          onBack={handleBackToLabs}
-          onAddTest={() => setShowTestModal(true)}
-          onEditTest={(test) => {
-            setTestToDelete(test);
-            setShowTestModal(true);
-          }}
-          onDeleteTest={(test) => {
-            setTestToDelete(test);
-            setShowDeleteDialog(true);
-          }}
+          onBack={() => setViewingLabTests(false)}
+          onAddTest={(testData) => handleTestAction(createTestAsync, testData)}
+          onEditTest={(testData) => handleTestAction(updateTestAsync, testData)}
+          onDeleteTest={handleDeleteTest}
         />
       ) : (
         <>
           <div className="flex justify-between items-center mb-4">
             <input
               type="text"
-              placeholder="Filter labs..."
-              className="border rounded-md px-3 py-2 w-64"
+              placeholder="Filter by lab name"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
+              className="border rounded-md px-3 py-2"
             />
+            <div className="flex items-center">
+              <label htmlFor="itemsPerPage" className="mr-2">
+                Items per page:
+              </label>
+              <select
+                id="itemsPerPage"
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="border rounded-md px-3 py-2"
+              >
+                {[5, 10, 20, 30].map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
+              onClick={handleCreateLab}
               className="px-3 py-2 border rounded-md"
-              onClick={() => setShowLabModal(true)}
             >
-              Create lab
+              Add Lab
             </button>
           </div>
 
@@ -563,75 +906,72 @@ const LabTable = () => {
               <tr className="border-b">
                 <th className="py-2 px-4"></th>
                 <th className="py-2 px-4">Name</th>
+                <th className="py-2 px-4">Email</th>
                 <th className="py-2 px-4">Address</th>
                 <th className="py-2 px-4">Contact</th>
-                <th className="py-2 px-4">Tests Offered</th>
                 <th className="py-2 px-4">Actions</th>
+                <th className="py-2 px-4">Handle Mobile View</th>
               </tr>
             </thead>
             <tbody>
-              {currentLabs.map((lab) => (
-                <tr
-                  key={lab._id}
-                  className="border-b hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleLabClick(lab)}
-                >
-                  <td
-                    className="py-2 px-4 cursor-pointer"
-                    onClick={() => setSelectedLab(lab)}
-                  >
-                    <img
-                      className="w-full h-28 object-cover cursor-pointer"
-                      src={lab.image}
-                      alt={lab.name}
-                    />
-                  </td>
-                  <td
-                    className="py-2 px-4 cursor-pointer"
-                    onClick={() => setSelectedLab(lab)}
-                  >
-                    {lab.name}
-                  </td>
-                  <td
-                    className="py-2 px-4 cursor-pointer"
-                    onClick={() => setSelectedLab(lab)}
-                  >
-                    {lab.address?.address}
-                  </td>
-                  <td
-                    className="py-2 px-4 cursor-pointer"
-                    onClick={() => setSelectedLab(lab)}
-                  >
-                    {lab.contactNumber}
-                  </td>
-                  <td
-                    className="py-2 px-4 cursor-pointer"
-                    onClick={() => setSelectedLab(lab)}
-                  >
-                    {lab.testsOffered?.length} test
-                    {lab.testsOffered?.length > 1 ? "s" : ""}
-                  </td>
+              {filteredLabs.map((lab) => (
+                <tr key={lab._id} className="border-b">
                   <td className="py-2 px-4">
+                    <img className="w-56 h-28" src={lab.image} alt={lab.name} />
+                  </td>
+                  <td className="py-2 px-4">{lab.name}</td>
+                  <td className="py-2 px-4">{lab.email}</td>
+                  <td className="py-2 px-4">
+                    {`${lab?.address?.address}, ${lab?.address?.city}, ${lab?.address?.state}, ${lab?.address?.pinCode}`}
+                  </td>
+                  <td className="py-2 px-4">{lab.contactNumber}</td>
+                  <td className="py-2 px-4 space-x-4">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      className="text-blue-600 mr-2"
+                      onClick={() => handleViewTests(lab)}
+                    >
+                      View Tests
+                    </button>
+                    <button
+                      className="text-blue-600 mr-2"
+                      onClick={() => {
                         setSelectedLab(lab);
                         setShowLabModal(true);
                       }}
-                      className="bg-blue-500 text-white mr-2 px-2 py-1 rounded-lg"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      className="text-red-600 mr-2"
+                      onClick={() => {
                         setSelectedLab(lab);
                         setShowDeleteDialog(true);
                       }}
-                      className="bg-red-500 text-white mr-2 px-2 py-1 rounded-lg"
                     >
                       Delete
                     </button>
+                  </td>
+                  <td className="py-2 px-4 ">
+                    <div className="flex items-center justify-center">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={lab.handleView}
+                          onChange={() => handleToggleHandleView(lab?._id)}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`w-11 h-6 bg-gray-200 rounded-full shadow-inner ${
+                            lab.handleView ? "bg-green-600" : "bg-gray-200"
+                          }`}
+                        ></div>
+                        <div
+                          className={`absolute left-0 inline-block w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                            lab.handleView ? "translate-x-5" : "translate-x-1"
+                          }`}
+                        ></div>
+                      </label>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -639,45 +979,33 @@ const LabTable = () => {
           </table>
 
           <Pagination
-            itemsPerPage={itemsPerPage}
-            totalItems={filteredLabs.length}
-            paginate={setCurrentPage}
-            currentPage={currentPage}
+            currentPage={pagination.currentPage}
+            itemsPerPage={pagination.limit}
+            totalItems={pagination.totalLabs}
+            onPageChange={handlePageChange}
           />
         </>
       )}
+
       {showLabModal && (
         <LabModal
-          closeModal={() => setShowLabModal(false)}
           lab={selectedLab}
-          onSubmit={selectedLab ? handleUpdateLab : handleCreateLab}
-        />
-      )}
-
-      {showTestModal && (
-        <TestModal
-          closeModal={() => setShowTestModal(false)}
-          test={
-            selectedLab
-              ? selectedLab.testsOffered.find(
-                  (t) => t._id === testToDelete?._id
-                )
-              : null
+          onSubmit={(labData) =>
+            handleLabAction(
+              selectedLab ? updateLabAsync : createLabAsync,
+              selectedLab?._id,
+              labData
+            )
           }
-          onSubmit={testToDelete ? handleUpdateTest : handleCreateTest}
+          onClose={() => setShowLabModal(false)}
         />
       )}
 
       {showDeleteDialog && (
         <DeleteConfirmationModal
-          onConfirm={() =>
-            testToDelete
-              ? handleDeleteTest(testToDelete._id)
-              : handleDeleteLab(selectedLab._id)
-          }
+          message={`Are you sure you want to delete the lab ${selectedLab?.name}?`}
+          onConfirm={() => handleDeleteLab(selectedLab._id)}
           onCancel={() => setShowDeleteDialog(false)}
-          itemToDelete={testToDelete || selectedLab}
-          itemType={testToDelete ? "test" : "lab"}
         />
       )}
     </div>

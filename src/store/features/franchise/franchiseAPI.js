@@ -1,7 +1,10 @@
 import axiosInstance from "../../../api/axiosInstance";
 
-const getAllFranchises = async (headers) => {
-  return await axiosInstance.get("/get-all-franchises", { headers: headers });
+const getAllFranchises = async (headers, page, limit) => {
+  return await axiosInstance.get(
+    `/get-all-franchises?page=${page}&limit=${limit}`,
+    { headers: headers }
+  );
 };
 
 const createFranchise = async (newFranchiseData, headers) => {
@@ -25,5 +28,21 @@ const deleteFranchise = async (franchiseId, headers) => {
   });
 };
 
-export { getAllFranchises, createFranchise, deleteFranchise, updateFranchise };
+const setCommissionForSelectedFranchises = (
+  franchiseIds,
+  commissionPercentage
+) => {
+  return axiosInstance.post("/franchises-commission", {
+    franchiseIds,
+    commissionPercentage,
+  });
+};
+
+export {
+  getAllFranchises,
+  createFranchise,
+  deleteFranchise,
+  updateFranchise,
+  setCommissionForSelectedFranchises,
+};
 //================================================================

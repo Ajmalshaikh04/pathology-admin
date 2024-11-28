@@ -6,19 +6,21 @@ import {
   rejectAppointment,
   updateLabTestStatus,
   updateAppointmentCommission,
+  getAppointmentsByAgentsId,
+  deleteAppointment,
 } from "./appoinmentsAPI";
 
 export const getAllAppointmentsAsync = createAsyncThunk(
   "appointments/getAllAppointments",
-  async (_, thunkAPI) => {
+  async ({ page = 1, limit = 10 }, thunkAPI) => {
     try {
       const { token } = thunkAPI.getState().user;
       const headers = { authorization: token };
-      const response = await getAllAppointments(headers);
+      const response = await getAllAppointments(headers, page, limit);
       console.log("Appointments", response);
-      return response.data;
+      return response;
     } catch (error) {
-      return error.message;
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
@@ -37,13 +39,34 @@ export const getAppointmentsByUserIdAsync = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch appointments by agent ID
+export const getAppointmentsByAgentsIdAsync = createAsyncThunk(
+  "appointments/getAppointmentsByAgentsId",
+  async ({ agentId, page = 1, limit = 10 }, thunkAPI) => {
+    try {
+      const { token } = thunkAPI.getState().user;
+      const headers = { authorization: token };
+      const response = await getAppointmentsByAgentsId(
+        agentId,
+        headers,
+        page,
+        limit
+      );
+      console.log("Agents APpointments", response);
+      return response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
+
 export const approveAppointmentAsync = createAsyncThunk(
   "appointments/approve",
   async ({ appointmentId, labId }, thunkAPI) => {
     const { token } = thunkAPI.getState().user;
     const headers = { authorization: token };
     const response = await approveAppointment(appointmentId, labId, headers);
-    return response.data;
+    return response.appointment;
   }
 );
 export const rejectAppointmentAsync = createAsyncThunk(
@@ -52,7 +75,7 @@ export const rejectAppointmentAsync = createAsyncThunk(
     const { token } = thunkAPI.getState().user;
     const headers = { authorization: token };
     const response = await rejectAppointment(appointmentId, labId, headers);
-    return response.data;
+    return response.appointment;
   }
 );
 
@@ -97,11 +120,30 @@ export const updateAppointmentCommissionAsync = createAsyncThunk(
     }
   }
 );
+export const deleteAppointmentAsync = createAsyncThunk(
+  "appointments/deleteAppointment",
+  async ({ id }, thunkAPI) => {
+    try {
+      const { token } = thunkAPI.getState().user;
+      const headers = { authorization: token };
+      const response = await deleteAppointment(id, headers);
+      return response;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const labSlice = createSlice({
   name: "labs",
   initialState: {
     appointments: [],
+    data: [],
+    pagination: {
+      currentPage: 1,
+      limit: 10,
+      totalPages: 1,
+    },
     user: null,
     loading: false,
     error: null,
@@ -114,7 +156,8 @@ const labSlice = createSlice({
       })
       .addCase(getAllAppointmentsAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.appointments = action.payload;
+        state.appointments = action.payload.data;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getAllAppointmentsAsync.rejected, (state, action) => {
         state.loading = false;
@@ -132,19 +175,32 @@ const labSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(getAppointmentsByAgentsIdAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAppointmentsByAgentsIdAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointments = action.payload.data;
+        state.pagination = action.payload.pagination;
+      })
+      .addCase(getAppointmentsByAgentsIdAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(approveAppointmentAsync.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(approveAppointmentAsync.fulfilled, (state, action) => {
         state.loading = false;
-        const updatedAppointment = action.payload?.appointment;
-        const index = state.appointments.findIndex(
-          (app) => app._id === updatedAppointment?._id
-        );
-        if (index !== -1) {
-          state.appointments[index] = updatedAppointment;
-        }
+        // const updatedAppointment = action.payload?.appointment;
+        // const index = state.appointments.findIndex(
+        //   (app) => app._id === updatedAppointment?._id
+        // );
+        // if (index !== -1) {
+        //   state.appointments[index] = updatedAppointment;
+        // }
       })
       .addCase(approveAppointmentAsync.rejected, (state, action) => {
         state.loading = false;
@@ -156,13 +212,13 @@ const labSlice = createSlice({
       })
       .addCase(rejectAppointmentAsync.fulfilled, (state, action) => {
         state.loading = false;
-        const updatedAppointment = action.payload?.appointment;
-        const index = state.appointments.findIndex(
-          (app) => app._id === updatedAppointment?._id
-        );
-        if (index !== -1) {
-          state.appointments[index] = updatedAppointment;
-        }
+        // const updatedAppointment = action.payload?.appointment;
+        // const index = state.appointments.findIndex(
+        //   (app) => app._id === updatedAppointment?._id
+        // );
+        // if (index !== -1) {
+        //   state.appointments[index] = updatedAppointment;
+        // }
       })
       .addCase(rejectAppointmentAsync.rejected, (state, action) => {
         state.loading = false;
@@ -215,6 +271,19 @@ const labSlice = createSlice({
         state.error = action.payload
           ? action.payload.message
           : "Failed to update commission";
+      })
+      .addCase(deleteAppointmentAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteAppointmentAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointments = state.appointments.filter(
+          (appointment) => appointment._id !== action.payload
+        );
+      })
+      .addCase(deleteAppointmentAsync.rejected, (state, action) => {
+        state.loading = false;
       });
   },
 });

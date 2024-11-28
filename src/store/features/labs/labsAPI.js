@@ -1,7 +1,15 @@
 import axiosInstance from "../../../api/axiosInstance";
 
-const getAllLabs = async () => {
-  return await axiosInstance.get("/labs");
+const getAllLabs = async (page, limit) => {
+  return await axiosInstance.get(`/labs?page=${page}&limit=${limit}`);
+};
+const getLabAppointmentsInProgress = async (labId, page, limit, headers) => {
+  return await axiosInstance.get(
+    `/appointments/lab/${labId}?page=${page}&limit=${limit}`,
+    {
+      headers: headers,
+    }
+  );
 };
 const createLab = async (newLabData, headers) => {
   return await axiosInstance.post("/create-lab", newLabData, {
@@ -42,4 +50,5 @@ export {
   createTest,
   updateTest,
   deleteTest,
+  getLabAppointmentsInProgress,
 };

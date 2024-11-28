@@ -341,16 +341,22 @@ const Sidebar = () => {
           roles: ["superAdmin"],
         },
         {
-          to: "/agents",
-          icon: AiOutlineUser,
-          text: "Agents",
-          roles: ["franchise"],
-        },
-        {
           to: "/councilor-users",
           icon: AiOutlineUser,
           text: "Users",
           roles: ["councilor"],
+        },
+        {
+          to: "/lab",
+          icon: AiOutlineUser,
+          text: "Appointment",
+          roles: ["lab"],
+        },
+        {
+          to: "/my-referral-bookings",
+          icon: AiOutlineUser,
+          text: "Bookings",
+          roles: ["agent"],
         },
       ],
     },
@@ -369,6 +375,30 @@ const Sidebar = () => {
           text: "Labs",
           roles: ["superAdmin"],
         },
+        {
+          to: "/labs-tests",
+          icon: AiOutlineFileDone,
+          text: "Lab Test Categories",
+          roles: ["superAdmin"],
+        },
+        {
+          to: "/labs-boy",
+          icon: AiOutlineFileDone,
+          text: "Lab Boy",
+          roles: ["superAdmin", "lab"],
+        },
+        {
+          to: "/health-problem",
+          icon: AiOutlineFileDone,
+          text: "Health Problem",
+          roles: ["superAdmin"],
+        },
+        {
+          to: "/lab-bookings",
+          icon: AiOutlineFileDone,
+          text: "Lab Bookings",
+          roles: ["labBoy"],
+        },
       ],
     },
     {
@@ -380,6 +410,18 @@ const Sidebar = () => {
           text: "Franchise",
           roles: ["superAdmin"],
         },
+        {
+          to: "/agents",
+          icon: AiOutlineUser,
+          text: "Agents",
+          roles: ["franchise", "superAdmin"],
+        },
+        // {
+        //   to: "/handle-commission",
+        //   icon: AiOutlineUser,
+        //   text: "Handle Commission",
+        //   roles: ["superAdmin"],
+        // },
       ],
     },
   ];
@@ -423,6 +465,12 @@ const Sidebar = () => {
                 ? "S-Admin"
                 : role === "councilor"
                 ? "Councilor"
+                : role === "lab"
+                ? "Lab"
+                : role === "agent"
+                ? "Agent"
+                : role === "labBoy"
+                ? "Lab Boy"
                 : "Unknown Role"}
             </span>
           )}

@@ -7,9 +7,11 @@ const uniqueIdentifier = `image_${Date.now()}_${Math.floor(
 
 const uploadImage = async (fileName, file, setProgressStatus) => {
   try {
+    // Ensure fileName is a string
+    const sanitizedFileName = String(fileName).replace(/\s+/g, "");
     const storageRef = ref(
       storage,
-      `${fileName.replace(/\s+/g, "")}/${uniqueIdentifier} ${file.name}`
+      `${sanitizedFileName}/${uniqueIdentifier} ${file.name}`
     );
 
     // Upload the file to the storage bucket

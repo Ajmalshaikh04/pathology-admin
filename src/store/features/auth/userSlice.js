@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { jwtDecode } from "jwt-decode";
 import {
   register,
   signInAdmin,
@@ -7,6 +8,7 @@ import {
   getAllCouncilors,
   assignCouncilors,
   getAllAssignedUsersByCounselorId,
+  deleteUserById,
 } from "./userAPI";
 
 const TOKEN_KEY = "userToken";
@@ -41,12 +43,12 @@ export const signInAdminAsync = createAsyncThunk(
 
 export const getAllUsersAsync = createAsyncThunk(
   "user/getAllUsers",
-  async (_, thunkAPI) => {
+  async ({ page = 1, limit = 10 }, thunkAPI) => {
     try {
       const { token } = thunkAPI.getState().user;
 
       const headers = { authorization: token };
-      const response = await getAllUsers(headers);
+      const response = await getAllUsers(headers, page, limit);
       console.log(response);
       return response;
     } catch (error) {
@@ -56,14 +58,14 @@ export const getAllUsersAsync = createAsyncThunk(
 );
 export const getAllCouncilorsAsync = createAsyncThunk(
   "user/getAllCouncilors",
-  async (_, thunkAPI) => {
+  async ({ page, limit }, thunkAPI) => {
     try {
       const { token } = thunkAPI.getState().user;
 
       const headers = { authorization: token };
-      const response = await getAllCouncilors(headers);
+      const response = await getAllCouncilors(headers, page, limit);
       console.log(response);
-      return response.data;
+      return response;
     } catch (error) {
       return error.message;
     }
@@ -103,16 +105,32 @@ export const assignCouncilorsAsync = createAsyncThunk(
 
 export const getAllAssignedUsersByCounselorIdAsync = createAsyncThunk(
   "user/getAllAssignedUsersByCounselorId",
-  async ({ counselorId }, thunkAPI) => {
+  async ({ counselorId, page = 1, limit = 10 }, thunkAPI) => {
     try {
       const { token } = thunkAPI.getState().user;
       const headers = { authorization: token };
       const response = await getAllAssignedUsersByCounselorId(
         counselorId,
+        page,
+        limit,
         headers
       );
       console.log(response);
       return response.data;
+    } catch (error) {
+      return error.message;
+    }
+  }
+);
+export const deleteUserByIdAsync = createAsyncThunk(
+  "user/deleteUserById",
+  async ({ id }, thunkAPI) => {
+    try {
+      const { token } = thunkAPI.getState().user;
+      const headers = { authorization: token };
+      const response = await deleteUserById(id, headers);
+      console.log(response);
+      return response;
     } catch (error) {
       return error.message;
     }
@@ -125,13 +143,17 @@ const userSlice = createSlice({
     isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
     token: localStorage.getItem(TOKEN_KEY),
     user: localStorage.getItem(USER_ID) || null,
-    dashboardId: null,
     users: [],
     councilors: [],
     councilorUsers: [],
     role: JSON.parse(localStorage.getItem(USER_KEY)) || null,
     loading: false,
     error: null,
+    pagination: {
+      currentPage: 1,
+      limit: 10,
+      totalPages: 1,
+    },
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -157,16 +179,15 @@ const userSlice = createSlice({
       .addCase(signInAdminAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload?.userId;
-        state.role = action.payload?.role;
         state.token = action.payload?.token;
-        state.pinCode = action.payload?.location?.pinCode;
-        if (action.payload.token) {
-          localStorage.setItem(TOKEN_KEY, action.payload?.token);
-          localStorage.setItem(USER_KEY, JSON.stringify(action.payload.role));
-        }
-        if (action.payload?.userId) {
-          localStorage.setItem(USER_ID, action.payload?.userId);
+        if (action.payload?.token) {
+          const decodedToken = jwtDecode(action.payload.token);
+          state.user = decodedToken._id;
+          state.role = decodedToken.role;
+
+          localStorage.setItem(TOKEN_KEY, action.payload.token);
+          localStorage.setItem(USER_ID, decodedToken._id);
+          localStorage.setItem(USER_KEY, JSON.stringify(decodedToken.role));
         }
       })
       .addCase(signInAdminAsync.rejected, (state, action) => {
@@ -184,11 +205,12 @@ const userSlice = createSlice({
       })
       .addCase(getAllUsersAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload;
+        state.users = action.payload.data;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getAllUsersAsync.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(getAllCouncilorsAsync.pending, (state) => {
         state.loading = true;
@@ -196,11 +218,17 @@ const userSlice = createSlice({
       })
       .addCase(getAllCouncilorsAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.councilors = action.payload;
+        state.councilors = action.payload.data;
+        state.pagination = {
+          currentPage: action.payload.pagination.currentPage,
+          limit: action.payload.pagination.limit,
+          totalPages: action.payload.pagination.totalPages,
+          totalUsers: action.payload.totalUsers,
+        };
       })
       .addCase(getAllCouncilorsAsync.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       .addCase(signOutAdminAsync.pending, (state) => {
         state.loading = true;
@@ -216,6 +244,7 @@ const userSlice = createSlice({
           state.pinCode = null;
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem(USER_KEY);
+          localStorage.removeItem(USER_ID);
         }
       })
       .addCase(signOutAdminAsync.rejected, (state, action) => {
@@ -240,6 +269,9 @@ const userSlice = createSlice({
           state.error = action.error.message;
         }
       );
+    builder.addCase(deleteUserByIdAsync.fulfilled, (state, action) => {
+      state.users = state.users.filter((user) => user._id !== action.payload);
+    });
   },
 });
 

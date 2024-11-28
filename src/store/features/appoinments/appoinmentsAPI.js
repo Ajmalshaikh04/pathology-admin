@@ -1,14 +1,25 @@
 import axiosInstance from "../../../api/axiosInstance";
 
-const getAllAppointments = async (headers) => {
-  return await axiosInstance.get("/get-all-appointments", {
-    headers: headers,
-  });
+const getAllAppointments = async (headers, page = 1, limit = 10) => {
+  return await axiosInstance.get(
+    `/get-all-appointments?page=${page}&limit=${limit}`,
+    {
+      headers: headers,
+    }
+  );
 };
 const getAppointmentsByUserId = async (userId, headers) => {
   return await axiosInstance.get(`/appointments/user/${userId}`, {
     headers: headers,
   });
+};
+const getAppointmentsByAgentsId = async (agentId, headers, page, limit) => {
+  return await axiosInstance.get(
+    `/appointments/${agentId}?page=${page}&limit=${limit}`,
+    {
+      headers: headers,
+    }
+  );
 };
 const approveAppointment = async (appointmentId, labId, headers) => {
   return await axiosInstance.put(
@@ -51,6 +62,12 @@ const updateAppointmentCommission = async (
   );
 };
 
+const deleteAppointment = (id, headers) => {
+  return axiosInstance.delete(`appointment/${id}`, {
+    headers: headers,
+  });
+};
+
 export {
   getAllAppointments,
   getAppointmentsByUserId,
@@ -58,4 +75,6 @@ export {
   rejectAppointment,
   updateLabTestStatus,
   updateAppointmentCommission,
+  getAppointmentsByAgentsId,
+  deleteAppointment,
 };

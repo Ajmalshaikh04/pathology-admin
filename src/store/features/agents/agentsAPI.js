@@ -1,7 +1,23 @@
 import axiosInstance from "../../../api/axiosInstance";
 
-const getAllAgentsByPinCode = async (pinCode, headers) => {
-  return await axiosInstance.get(`/location/${pinCode}`, { headers: headers });
+const getAllAgentsByFranchiseId = async (franchiseId, page, limit, headers) => {
+  return await axiosInstance.get(`/agents/${franchiseId}`, {
+    params: { page, limit },
+    headers: headers,
+  });
+};
+// const getAllAgents = async (headers, page, limit) => {
+//   return await axiosInstance.get(
+//     `/get-all-agents?page=${page}&limit=${limit}`,
+//     { headers: headers }
+//   );
+// };
+
+const getAllAgents = async (headers, page, limit) => {
+  return await axiosInstance.get(`/get-all-agents`, {
+    headers: headers,
+    params: { page, limit },
+  });
 };
 
 const createAgent = async (newData, headers) => {
@@ -21,5 +37,19 @@ const deleteAgent = async (agentId, headers) => {
   });
 };
 
-export { getAllAgentsByPinCode, updateAgent, deleteAgent, createAgent };
+const setCommissionForSelectedAgents = (agentIds, commissionPercentage) => {
+  return axiosInstance.post("/agents-commission", {
+    agentIds,
+    commissionPercentage,
+  });
+};
+
+export {
+  getAllAgentsByFranchiseId,
+  updateAgent,
+  deleteAgent,
+  createAgent,
+  getAllAgents,
+  setCommissionForSelectedAgents,
+};
 //======================================================
